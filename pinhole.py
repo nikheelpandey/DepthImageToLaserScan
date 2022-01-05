@@ -1,3 +1,8 @@
+"""
+Author: Nikhil Pandey
+Contact: contact@nikhilpandey.in
+"""
+
 import cv2
 import numpy as np
 
