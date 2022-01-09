@@ -12,8 +12,7 @@ If you want to get pixels at (x, y) access it using (y, x)
 """
 
 
-class PinholeCam(object):
-    
+class PinholeCam(object):    
     def __init__(self,P,K):
         
         self.x  = None #w 
@@ -38,29 +37,27 @@ class PinholeCam(object):
     def rectifyPoint(self,pt):
         
         if self.distortion_state == None:
-            pass
+            return pt
+
+        raw32 = pt.copy()
+        rect32= np.zeros_like(pt)
+
+        # cv::Point2f raw32 = uv_raw, rect32;
+        # const cv::Mat src_pt(1, 1, CV_32FC2, &raw32.x);
+        # cv::Mat dst_pt(1, 1, CV_32FC2, &rect32.x);
+        # cv::undistortPoints(src_pt, dst_pt, K_, D_, R_, P_);
+        return rect32
+
         
-        if self.distortion_state == UNKNOWN:
-            pass
+ 
+
+    def projectPixelTo3dRay(self, raw_pixel):
+
+        x = (raw_pixel[0]- self.cx() - self.Tx()) / self.fx()
+        y = (raw_pixel[1]- self.cy() - self.Ty()) / self.fy()
+        z = 1.0 
         
-        if self.distortion_state == CALIBRATED:
-            
-
-            """
-                cv::Point2f raw32 = uv_raw, rect32;
-                const cv::Mat src_pt(1, 1, CV_32FC2, &raw32.x);
-                cv::Mat dst_pt(1, 1, CV_32FC2, &rect32.x);
-
-            """
-            if self.distortion_model == EQUIDISTANT:
-                cv2.fisheye.undistortPoints(src_pt, dst_pt, K, D_, R_, P)
-        
-            elif self.distortion_model == PLUMB_BOB or distortion_model == RATIONAL_POLYNOMIAL :
-                cv2.undistortPoints(src_pt, dst_pt, K, D_, R_, P)
-
-
-    def projectPixelTo3dRay(self):
-        pass
+        return np.array([x,y,z],type=np.float16)
 
     def getRay(self, flag="L"):
         
@@ -79,66 +76,3 @@ class PinholeCam(object):
         return ray
 
 
-
-
-#          cv::Point2d PinholeCameraModel::project3dToPixel(const cv::Point3d& xyz) const
-#  {
-#    assert( initialized() );
-#    assert(P_(2, 3) == 0.0); // Calibrated stereo cameras should be in the same plane
-  
-#    // [U V W]^T = P * [X Y Z 1]^T
-#    // u = U/W
-#    // v = V/W
-#    cv::Point2d uv_rect;
-#    uv_rect.x = (fx()*xyz.x + Tx()) / xyz.z + cx();
-#    uv_rect.y = (fy()*xyz.y + Ty()) / xyz.z + cy();
-#    return uv_rect;
-#  }
-  
-#  cv::Point3d PinholeCameraModel::projectPixelTo3dRay(const cv::Point2d& uv_rect) const
-#  {
-#    return projectPixelTo3dRay(uv_rect, P_);
-#  }
-  
-#  cv::Point3d PinholeCameraModel::projectPixelTo3dRay(const cv::Point2d& uv_rect, const cv::Matx34d& P) const
-#  {
-#    assert( initialized() );
-  
-#    const double& fx = P(0,0);
-#    const double& fy = P(1,1);
-#    const double& cx = P(0,2);
-#    const double& cy = P(1,2);
-#    const double& Tx = P(0,3);
-#    const double& Ty = P(1,3);
-  
-#    cv::Point3d ray;
-#    ray.x = (uv_rect.x - cx - Tx) / fx;
-#    ray.y = (uv_rect.y - cy - Ty) / fy;
-#    ray.z = 1.0;
-#    return ray;
-#  }
-  
-#  void PinholeCameraModel::rectifyImage(const cv::Mat& raw, cv::Mat& rectified, int interpolation) const
-#  {
-#    assert( initialized() );
-  
-#    switch (cache_->distortion_state) {
-#      case NONE:
-#        raw.copyTo(rectified);
-#        break;
-#      case CALIBRATED:
-#        initRectificationMaps();
-#        if (raw.depth() == CV_32F || raw.depth() == CV_64F)
-#        {
-#          cv::remap(raw, rectified, cache_->reduced_map1, cache_->reduced_map2, interpolation, cv::BORDER_CONSTANT, std::numeric_limits<float>::quiet_NaN());
-#        }
-#        else {
-#          cv::remap(raw, rectified, cache_->reduced_map1, cache_->reduced_map2, interpolation);
-#        }
-#        break;
-#      default:
-#        assert(cache_->distortion_state == UNKNOWN);
-#        throw Exception("Cannot call rectifyImage when distortion is unknown.");
-#    }
-#  }
-  

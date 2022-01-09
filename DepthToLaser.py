@@ -123,5 +123,8 @@ class DepthImageToLaserScan(obejct):
 
 
     def getLaserScan(self,depth_msg):
+
+
+
         self.convert(depth_msg)
         return self.laser_scan 
