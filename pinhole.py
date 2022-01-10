@@ -39,13 +39,15 @@ class PinholeCam(object):
         if self.distortion_state == None:
             return pt
 
-        raw32 = pt.copy()
-        rect32= np.zeros_like(pt)
+        raw32 = uv_raw, rect32
+        
 
         # cv::Point2f raw32 = uv_raw, rect32;
         # const cv::Mat src_pt(1, 1, CV_32FC2, &raw32.x);
         # cv::Mat dst_pt(1, 1, CV_32FC2, &rect32.x);
         # cv::undistortPoints(src_pt, dst_pt, K_, D_, R_, P_);
+
+
         return rect32
 
         
